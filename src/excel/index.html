@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:"
+    />
+    <title>My Excel</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="ribbon" id="ribbon">
+      <div class="group">
+        <button data-action="new" title="New workbook (Ctrl+N)">New</button>
+        <button data-action="open" title="Open (Ctrl+O)">Open</button>
+        <button data-action="save" title="Save (Ctrl+S)">Save</button>
+        <button data-action="export-pdf" title="Export to PDF">PDF</button>
+        <button data-action="print" title="Print (Ctrl+P)">Print</button>
+      </div>
+      <div class="group">
+        <button data-cmd="undo" class="icon" title="Undo (Ctrl+Z)">↶</button>
+        <button data-cmd="redo" class="icon" title="Redo (Ctrl+Y)">↷</button>
+      </div>
+      <div class="group">
+        <select id="font" title="Font">
+          <option>Calibri</option>
+          <option>Arial</option>
+          <option>Cambria</option>
+          <option>Consolas</option>
+          <option>Courier New</option>
+          <option>Georgia</option>
+          <option>Segoe UI</option>
+          <option>Tahoma</option>
+          <option>Times New Roman</option>
+          <option>Verdana</option>
+        </select>
+        <select id="size" title="Font size"></select>
+        <button data-cmd="bold" data-flag="bold" class="icon" title="Bold (Ctrl+B)"><b>B</b></button>
+        <button data-cmd="italic" data-flag="italic" class="icon" title="Italic (Ctrl+I)"><i>I</i></button>
+        <button data-cmd="underline" data-flag="underline" class="icon" title="Underline (Ctrl+U)"><u>U</u></button>
+        <button data-cmd="strike" data-flag="strike" class="icon" title="Strikethrough (Ctrl+5)"><s>ab</s></button>
+        <span class="split">
+          <button data-cmd="apply-color" class="icon" title="Font color"><span class="swatch" id="color-swatch">A</span></button>
+          <label class="pick" title="Choose font color">▾<input type="color" id="color" value="#c00000" /></label>
+        </span>
+        <span class="split">
+          <button data-cmd="apply-fill" class="icon" title="Fill color"><span class="swatch fill" id="fill-swatch">◧</span></button>
+          <label class="pick" title="Choose fill color">▾<input type="color" id="fill" value="#ffff00" /></label>
+        </span>
+        <button data-cmd="no-fill" class="icon" title="No fill">∅</button>
+      </div>
+      <div class="group">
+        <button data-align="left" class="icon" title="Align left"><span class="align-icon left"></span></button>
+        <button data-align="center" class="icon" title="Center"><span class="align-icon center"></span></button>
+        <button data-align="right" class="icon" title="Align right"><span class="align-icon right"></span></button>
+        <button data-cmd="wrap" data-flag="wrap" title="Wrap text">Wrap</button>
+        <select id="borders" title="Borders">
+          <option value="">Borders</option>
+          <option value="bottom">Bottom border</option>
+          <option value="top">Top border</option>
+          <option value="left">Left border</option>
+          <option value="right">Right border</option>
+          <option value="all">All borders</option>
+          <option value="outside">Outside borders</option>
+          <option value="thick-bottom">Thick bottom border</option>
+          <option value="none">No border</option>
+        </select>
+      </div>
+      <div class="group">
+        <select id="numfmt" title="Number format"></select>
+        <button data-cmd="fmt-currency" class="icon" title="Currency">$</button>
+        <button data-cmd="fmt-percent" class="icon" title="Percent style (Ctrl+Shift+%)">%</button>
+        <button data-cmd="fmt-comma" class="icon" title="Comma style">,</button>
+        <button data-cmd="decimals-more" class="icon" title="Increase decimals">.0→</button>
+        <button data-cmd="decimals-less" class="icon" title="Decrease decimals">←.0</button>
+      </div>
+      <div class="group">
+        <button data-cmd="insert-rows" title="Insert rows above">+Row</button>
+        <button data-cmd="insert-cols" title="Insert columns to the left">+Col</button>
+        <button data-cmd="delete-rows" title="Delete rows">−Row</button>
+        <button data-cmd="delete-cols" title="Delete columns">−Col</button>
+      </div>
+      <div class="group">
+        <button data-cmd="autosum" class="icon" title="AutoSum (Alt+=)">Σ</button>
+        <button data-cmd="sort-asc" title="Sort A to Z">A→Z</button>
+        <button data-cmd="sort-desc" title="Sort Z to A">Z→A</button>
+        <button data-cmd="find" title="Find and replace (Ctrl+F)">Find</button>
+      </div>
+    </header>
+
+    <div class="formula-bar">
+      <input id="name-box" title="Name box: type a cell like B5 or a range like A1:C10, then Enter" spellcheck="false" />
+      <span class="fx">fx</span>
+      <textarea id="formula" rows="1" spellcheck="false" aria-label="Formula"></textarea>
+    </div>
+
+    <div class="find-bar" id="find-bar" hidden>
+      <input id="find-text" placeholder="Find" />
+      <button id="find-next" title="Next match (Enter)">Next</button>
+      <input id="replace-text" placeholder="Replace with" />
+      <button id="replace-one">Replace</button>
+      <button id="replace-all">Replace all</button>
+      <label class="check"><input type="checkbox" id="find-case" /> Match case</label>
+      <span id="find-status"></span>
+      <button id="find-close" class="icon" title="Close (Esc)">✕</button>
+    </div>
+
+    <main class="grid" id="grid"></main>
+
+    <ul class="autocomplete" id="autocomplete" hidden></ul>
+
+    <nav class="sheet-bar">
+      <button id="add-sheet" class="icon" title="New sheet (Shift+F11)">+</button>
+      <div class="tabs" id="tabs"></div>
+    </nav>
+
+    <footer class="status">
+      <span id="status-message">Ready</span>
+      <span id="selection-stats"></span>
+    </footer>
+
+    <ul class="context-menu" id="context-menu" hidden></ul>
+
+    <dialog id="prompt">
+      <form method="dialog">
+        <h2 id="prompt-title"></h2>
+        <div id="prompt-fields"></div>
+        <menu>
+          <button value="cancel" formnovalidate>Cancel</button>
+          <button value="ok" class="primary">OK</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <div id="print-area"></div>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

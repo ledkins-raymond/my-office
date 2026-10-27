@@ -15,6 +15,7 @@
   "scripts": {
     "build": "vite build",
     "start": "vite build && electron .",
+    "start:excel": "vite build && electron . --app=excel",
     "test": "node --test \"test/**/*.test.js\"",
     "dist": "vite build && electron-builder --win --publish never"
   },
@@ -36,11 +37,13 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "shortcutName": "My Word"
+      "shortcutName": "My Word",
+      "include": "build/installer.nsh"
     }
   },
   "dependencies": {
     "@xmldom/xmldom": "^0.8.15",
+    "exceljs": "^4.4.0",
     "jszip": "^3.10.2",
     "mammoth": "^1.13.0"
   },
@@ -56,6 +59,13 @@
     "docx": "^9.15.0",
     "electron": "^45.1.0",
     "electron-builder": "^26.18.0",
+    "hyperformula": "^3.5.0",
+    "ssf": "^0.11.2",
     "vite": "^8.3.5"
+  },
+  "overrides": {
+    "exceljs": {
+      "uuid": "^11.1.1"
+    }
   }
 }
