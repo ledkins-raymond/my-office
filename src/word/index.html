@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:"
+    />
+    <title>My Word</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="ribbon" id="ribbon">
+      <div class="group">
+        <button data-action="new" title="New (Ctrl+N)">New</button>
+        <button data-action="open" title="Open (Ctrl+O)">Open</button>
+        <button data-action="save" title="Save (Ctrl+S)">Save</button>
+        <button data-action="export-pdf" title="Export to PDF">PDF</button>
+        <button data-action="print" title="Print (Ctrl+P)">Print</button>
+      </div>
+      <div class="group">
+        <button data-cmd="undo" class="icon" title="Undo (Ctrl+Z)">↶</button>
+        <button data-cmd="redo" class="icon" title="Redo (Ctrl+Y)">↷</button>
+      </div>
+      <div class="group">
+        <select id="style" title="Style">
+          <option value="p">Normal</option>
+          <option value="1">Heading 1</option>
+          <option value="2">Heading 2</option>
+          <option value="3">Heading 3</option>
+        </select>
+        <select id="font" title="Font">
+          <option>Calibri</option>
+          <option>Arial</option>
+          <option>Cambria</option>
+          <option>Courier New</option>
+          <option>Garamond</option>
+          <option>Georgia</option>
+          <option>Segoe UI</option>
+          <option>Tahoma</option>
+          <option>Times New Roman</option>
+          <option>Verdana</option>
+        </select>
+        <select id="size" title="Font size"></select>
+      </div>
+      <div class="group">
+        <button data-cmd="toggleBold" data-mark="bold" class="icon" title="Bold (Ctrl+B)"><b>B</b></button>
+        <button data-cmd="toggleItalic" data-mark="italic" class="icon" title="Italic (Ctrl+I)"><i>I</i></button>
+        <button data-cmd="toggleUnderline" data-mark="underline" class="icon" title="Underline (Ctrl+U)"><u>U</u></button>
+        <button data-cmd="toggleStrike" data-mark="strike" class="icon" title="Strikethrough"><s>ab</s></button>
+        <label class="color icon" title="Font color">
+          <span id="color-swatch">A</span>
+          <input type="color" id="color" value="#c00000" />
+        </label>
+        <button data-cmd="toggleHighlight" data-mark="highlight" class="icon" title="Highlight"><mark>ab</mark></button>
+        <button data-cmd="unsetAllMarks" class="icon" title="Clear formatting">⌫</button>
+      </div>
+      <div class="group">
+        <button data-align="left" class="icon" title="Align left (Ctrl+L)"><span class="align-icon left"></span></button>
+        <button data-align="center" class="icon" title="Center (Ctrl+E)"><span class="align-icon center"></span></button>
+        <button data-align="right" class="icon" title="Align right (Ctrl+R)"><span class="align-icon right"></span></button>
+        <button data-align="justify" class="icon" title="Justify (Ctrl+J)"><span class="align-icon justify"></span></button>
+      </div>
+      <div class="group">
+        <button data-cmd="toggleBulletList" data-node="bulletList" class="icon" title="Bullets">• ≡</button>
+        <button data-cmd="toggleOrderedList" data-node="orderedList" class="icon" title="Numbering">1. ≡</button>
+        <button data-cmd="outdent" class="icon" title="Decrease indent (Shift+Tab)">⇤</button>
+        <button data-cmd="indent" class="icon" title="Increase indent (Tab)">⇥</button>
+      </div>
+      <div class="group">
+        <button data-action="insert-table" title="Insert table">Table</button>
+        <button data-action="insert-image" title="Insert picture">Picture</button>
+        <button data-action="insert-link" title="Insert link (Ctrl+K)">Link</button>
+        <button data-action="insert-page-break" title="Page break (Ctrl+Enter)">Page Break</button>
+      </div>
+      <div class="group">
+        <button data-action="find" title="Find and replace (Ctrl+F)">Find</button>
+      </div>
+    </header>
+
+    <div class="table-bar" id="table-bar" hidden>
+      <span class="label">Table</span>
+      <button data-cmd="addRowBefore">Row above</button>
+      <button data-cmd="addRowAfter">Row below</button>
+      <button data-cmd="addColumnBefore">Column left</button>
+      <button data-cmd="addColumnAfter">Column right</button>
+      <button data-cmd="mergeOrSplit">Merge/split cells</button>
+      <button data-cmd="toggleHeaderRow">Header row</button>
+      <button data-cmd="deleteRow">Delete row</button>
+      <button data-cmd="deleteColumn">Delete column</button>
+      <button data-cmd="deleteTable" class="danger">Delete table</button>
+    </div>
+
+    <div class="find-bar" id="find-bar" hidden>
+      <input id="find-text" placeholder="Find" />
+      <button id="find-next" title="Next match (Enter)">Next</button>
+      <input id="replace-text" placeholder="Replace with" />
+      <button id="replace-one">Replace</button>
+      <button id="replace-all">Replace all</button>
+      <span id="find-status"></span>
+      <button id="find-close" class="icon" title="Close (Esc)">✕</button>
+    </div>
+
+    <main class="canvas" id="canvas">
+      <article class="page" id="editor"></article>
+    </main>
+
+    <footer class="status">
+      <span id="word-count">0 words</span>
+      <span id="status-message"></span>
+    </footer>
+
+    <dialog id="prompt">
+      <form method="dialog">
+        <h2 id="prompt-title"></h2>
+        <div id="prompt-fields"></div>
+        <menu>
+          <button value="cancel" formnovalidate>Cancel</button>
+          <button value="ok" class="primary">OK</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <input type="file" id="image-file" accept="image/png,image/jpeg,image/gif,image/bmp" hidden />
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
