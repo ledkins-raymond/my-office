@@ -91,7 +91,7 @@ by the tests against LibreOffice.
 - No charts, pictures, merged cells, conditional formatting, data validation,
   comments, filters, or macros. Opening a file that has them
   keeps the data and formulas but drops those parts when you save.
-- A few Excel functions are missing from the engine (for example the CUBE
+- A few Excel functions are missing from the engine (for example AVERAGEIFS, the CUBE
   functions and some newer dynamic-array ones). A cell using one keeps the
   result it had when the file was last saved in Excel, but won't recalculate.
 - Printing prints every sheet's used cells as a table, landscape, with no page
