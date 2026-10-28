@@ -452,6 +452,35 @@ dialog input {
   color: var(--text);
 }
 
+#pivot-dialog {
+  width: 480px;
+}
+
+#pivot-range {
+  width: 100%;
+}
+
+.pivot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 12px;
+}
+
+.pivot-grid select {
+  width: 100%;
+  color: var(--text);
+}
+
+dialog .note {
+  margin: 4px 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+dialog .error:empty {
+  display: none;
+}
+
 dialog .error {
   color: #a4262c;
   margin: 0 0 8px;

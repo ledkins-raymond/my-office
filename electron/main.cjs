@@ -421,6 +421,8 @@ function buildMenus() {
         { label: '&Columns Left', click: act('insert-cols') },
         { label: '&Sheet', ...pageKey('Shift+F11'), click: act('insert-sheet') },
         { type: 'separator' },
+        { label: '&PivotTable…', click: act('insert-pivot') },
+        { type: 'separator' },
         { label: '&AutoSum', ...pageKey('Alt+='), click: act('autosum') },
         { label: '&Function…', ...pageKey('Shift+F3'), click: act('insert-function') },
         { label: "&Today's Date", ...pageKey('CmdOrCtrl+;'), click: act('insert-date') },
@@ -452,6 +454,10 @@ function buildMenus() {
       submenu: [
         { label: 'Sort &A to Z', click: act('sort-asc') },
         { label: 'Sort &Z to A', click: act('sort-desc') },
+        { type: 'separator' },
+        { label: '&PivotTable…', click: act('insert-pivot') },
+        { label: '&Refresh PivotTable', click: act('refresh-pivot') },
+        { label: 'Refresh A&ll PivotTables', click: act('refresh-all-pivots') },
       ],
     },
     viewMenu([

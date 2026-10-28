@@ -87,6 +87,10 @@
         <button data-cmd="sort-desc" title="Sort Z to A">Z→A</button>
         <button data-cmd="find" title="Find and replace (Ctrl+F)">Find</button>
       </div>
+      <div class="group">
+        <button data-cmd="insert-pivot" title="Summarize a block of data in a pivot table on a new sheet">PivotTable</button>
+        <button data-cmd="refresh-pivot" title="Rebuild this sheet's pivot table from its data (picks up new rows and categories)">Refresh</button>
+      </div>
     </header>
 
     <div class="formula-bar">
@@ -129,6 +133,32 @@
         <menu>
           <button value="cancel" formnovalidate>Cancel</button>
           <button value="ok" class="primary">OK</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog id="pivot-dialog">
+      <form method="dialog">
+        <h2>Create PivotTable</h2>
+        <label>
+          Data (first row is the headers)
+          <input id="pivot-range" spellcheck="false" />
+        </label>
+        <div class="pivot-grid">
+          <label>Rows <select id="pivot-row1"></select></label>
+          <label>then by <select id="pivot-row2"></select></label>
+          <label>Columns <select id="pivot-col"></select></label>
+          <span></span>
+          <label>Values <select id="pivot-val1"></select></label>
+          <label>as <select id="pivot-agg1"></select></label>
+          <label>and <select id="pivot-val2"></select></label>
+          <label>as <select id="pivot-agg2"></select></label>
+        </div>
+        <p class="note">The table goes on a new sheet. Its cells are formulas, so they update when the data changes; use Refresh to pick up new rows and categories.</p>
+        <p class="error" id="pivot-error"></p>
+        <menu>
+          <button value="cancel" formnovalidate>Cancel</button>
+          <button value="ok" class="primary" id="pivot-ok">Create</button>
         </menu>
       </form>
     </dialog>

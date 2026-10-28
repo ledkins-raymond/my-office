@@ -2,6 +2,7 @@ import { HyperFormula } from 'hyperformula';
 import { Workbook, parseRef, rangeName, cellName, normRange, DEFAULT_COL_PX, DEFAULT_ROW_PX } from './workbook.js';
 import { Grid } from './grid.js';
 import { NUMBER_FORMATS, formatValue, adjustDecimals, isError } from './format.js';
+import { AGGREGATES, sourceFields, isNumericField, writePivot, refreshPivot, pivotOnSheet } from './pivot.js';
 
 const office = window.office;
 const $ = (id) => document.getElementById(id);
@@ -144,6 +145,9 @@ const COMMANDS = {
   'insert-function': () => insertFunction(),
   'custom-format': () => customFormat(),
   'go-to': () => $('name-box').focus(),
+  'insert-pivot': () => openPivotDialog(),
+  'refresh-pivot': () => refreshActivePivot(),
+  'refresh-all-pivots': () => refreshAllPivots(),
 };
 
 function runCommand(name) {
@@ -897,6 +901,8 @@ function renderTabs() {
       tab.addEventListener('mousedown', (e) => {
         if (e.button !== 0) return;
         activate(id);
+        // The click itself moves focus to the page; put it back on the grid so typing works.
+        setTimeout(() => renaming === null && grid.input.focus());
       });
       tab.addEventListener('dblclick', () => startRename(id));
       tab.addEventListener('contextmenu', (e) => {
@@ -1123,6 +1129,133 @@ $('find-next').addEventListener('click', findNext);
 $('replace-one').addEventListener('click', replaceOne);
 $('replace-all').addEventListener('click', replaceAll);
 $('find-close').addEventListener('click', closeFind);
+
+// ---------- Pivot tables ----------
+// The data under the cursor (or the selection) is summarised on a new sheet; see pivot.js.
+
+function quoteName(name) {
+  return /^[A-Za-z_][A-Za-z0-9_.]*$/.test(name) ? name : `'${name.replace(/'/g, "''")}'`;
+}
+
+// "'Sales Data'!A1:D20" or "A1:D20" (this sheet) → { sheetId, sheetName, range }.
+function parseDataRef(text) {
+  const m = /^\s*(?:(?:'((?:[^']|'')+)'|([^!]+))!)?([^!]+)$/.exec(text);
+  if (!m) return null;
+  const name = m[1] ? m[1].replace(/''/g, "'") : m[2]?.trim();
+  const sheetId = name ? wb.sheetIds.find((id) => wb.sheetName(id).toLowerCase() === name.toLowerCase()) : wb.activeId;
+  const range = parseRef(m[3]);
+  if (sheetId === undefined || !range) return null;
+  return { sheetId, sheetName: wb.sheetName(sheetId), range };
+}
+
+function fillPivotFields() {
+  const ref = parseDataRef($('pivot-range').value);
+  const error = $('pivot-error');
+  const selects = ['pivot-row1', 'pivot-row2', 'pivot-col', 'pivot-val1', 'pivot-val2'].map($);
+  if (!ref || ref.range.r1 <= ref.range.r0) {
+    error.textContent = 'Enter a range with a header row and data below it, like A1:D50 or \'Sales\'!A1:D50.';
+    selects.forEach((s) => s.replaceChildren(new Option('(none)', '')));
+    $('pivot-ok').disabled = true;
+    return;
+  }
+  error.textContent = '';
+  $('pivot-ok').disabled = false;
+  const fields = sourceFields(wb, ref.sheetId, ref.range);
+  const keep = selects.map((s) => s.value);
+  selects.forEach((s, i) => {
+    s.replaceChildren(new Option('(none)', ''), ...fields.map((f) => new Option(f.name, f.name)));
+    if (fields.some((f) => f.name === keep[i])) s.value = keep[i];
+  });
+  // Sensible first guess: rows by the first text column, sum of the last number column.
+  if (!keep[0] && !keep[3]) {
+    const numeric = fields.filter((f) => isNumericField(wb, ref.sheetId, ref.range, f.col));
+    const text = fields.filter((f) => !numeric.includes(f));
+    $('pivot-row1').value = (text[0] || fields[0]).name;
+    const value = numeric.at(-1) || fields.find((f) => f.name !== $('pivot-row1').value) || fields[0];
+    $('pivot-val1').value = value.name;
+    $('pivot-agg1').value = numeric.includes(value) ? 'sum' : 'count';
+  }
+}
+
+function openPivotDialog() {
+  let range = grid.usedSelection();
+  const single = range.r0 === range.r1 && range.c0 === range.c1;
+  if (single) range = currentRegion(grid.active.r, grid.active.c);
+  if (range.r0 === range.r1) {
+    status('Click inside your data (with a header row on top) first, then choose PivotTable.');
+    return;
+  }
+  for (const id of ['pivot-agg1', 'pivot-agg2']) {
+    $(id).replaceChildren(...Object.entries(AGGREGATES).map(([value, a]) => new Option(a.label, value)));
+  }
+  for (const id of ['pivot-row1', 'pivot-row2', 'pivot-col', 'pivot-val1', 'pivot-val2']) $(id).replaceChildren();
+  $('pivot-range').value = `${quoteName(wb.sheetName(wb.activeId))}!${rangeName(range)}`;
+  fillPivotFields();
+  const dialog = $('pivot-dialog');
+  dialog.returnValue = '';
+  dialog.showModal();
+  $('pivot-row1').focus();
+}
+
+$('pivot-range').addEventListener('input', fillPivotFields);
+
+$('pivot-dialog').addEventListener('close', () => {
+  const dialog = $('pivot-dialog');
+  if (dialog.returnValue !== 'ok') return grid.input.focus();
+  const ref = parseDataRef($('pivot-range').value);
+  if (!ref) return;
+  const rows = [$('pivot-row1').value, $('pivot-row2').value].filter(Boolean);
+  const columns = [$('pivot-col').value].filter(Boolean);
+  const values = [
+    { field: $('pivot-val1').value, agg: $('pivot-agg1').value },
+    { field: $('pivot-val2').value, agg: $('pivot-agg2').value },
+  ].filter((v) => v.field);
+  if (!rows.length && !columns.length && !values.length) {
+    status('Pick at least one field for the pivot table.');
+    return;
+  }
+  try {
+    grid.commitEdit();
+    writePivot(wb, { source: { sheet: ref.sheetName, range: rangeName(ref.range) }, rows: [...new Set(rows)], columns, values });
+    grid.select(0, 0);
+    status(`Pivot table created on ${wb.sheetName(wb.activeId)}. It updates as the data changes; Refresh picks up new rows and categories.`);
+  } catch (err) {
+    status(err.message);
+  }
+  grid.input.focus();
+});
+
+function refreshActivePivot() {
+  const def = pivotOnSheet(wb, wb.activeId);
+  if (!def) {
+    if (wb.pivots.length) return refreshAllPivots();
+    return status('This sheet has no pivot table. Use PivotTable to make one.');
+  }
+  try {
+    refreshPivot(wb, def);
+    status('Pivot table refreshed.');
+  } catch (err) {
+    status(`Could not refresh: ${err.message}`);
+  }
+}
+
+function refreshAllPivots() {
+  const active = wb.activeId;
+  let done = 0;
+  const problems = [];
+  wb.transact(() => {
+    for (const def of wb.pivots) {
+      try {
+        refreshPivot(wb, def);
+        done++;
+      } catch (err) {
+        problems.push(`${def.sheet}: ${err.message}`);
+      }
+    }
+    wb.activeId = active;
+  });
+  status(problems.length ? `Refreshed ${done}. ${problems.join(' ')}` : `Refreshed ${done} pivot table${done === 1 ? '' : 's'}.`);
+}
 
 // ---------- Dialog ----------
 function ask(title, fields, okLabel = 'OK') {

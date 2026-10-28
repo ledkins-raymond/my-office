@@ -90,11 +90,11 @@ test('LibreOffice opens a saved file and calculates the same results', { skip: !
   const { wb } = sampleBook();
   fs.writeFileSync(path.join(dir, 'book.xlsx'), await writeXlsx(wb.toModel()));
   // Re-save through LibreOffice: if it can't read the file, this fails.
-  execFileSync(soffice, ['--headless', '--convert-to', 'ods', '--outdir', path.join(dir, 'ods'), path.join(dir, 'book.xlsx')], {
+  execFileSync(soffice, [loProfile(dir), '--headless', '--convert-to', 'ods', '--outdir', path.join(dir, 'ods'), path.join(dir, 'book.xlsx')], {
     stdio: 'ignore',
     timeout: 120000,
   });
-  execFileSync(soffice, ['--headless', '--convert-to', 'xlsx', '--outdir', path.join(dir, 'back'), path.join(dir, 'ods', 'book.ods')], {
+  execFileSync(soffice, [loProfile(dir), '--headless', '--convert-to', 'xlsx', '--outdir', path.join(dir, 'back'), path.join(dir, 'ods', 'book.ods')], {
     stdio: 'ignore',
     timeout: 120000,
   });
@@ -111,3 +111,8 @@ test('LibreOffice opens a saved file and calculates the same results', { skip: !
   assert.equal(reopened.getValue(reopened.sheetIds[0], 3, 3), 11);
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+// Each test file gets its own LibreOffice profile, so test files running at once don't collide.
+function loProfile(dir) {
+  return `-env:UserInstallation=file://${path.join(dir, 'lo-profile').replace(/\\/g, '/')}`;
+}

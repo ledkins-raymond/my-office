@@ -68,6 +68,10 @@ starts the right one.
 - Copy, cut and paste (formulas adjust; pasting from other programs works),
   fill handle and Ctrl+D / Ctrl+R (number series continue), AutoSum (Alt+=),
   sort A to Z / Z to A (keeps a header row on top), find and replace
+- Pivot tables: click in a block of data, choose **PivotTable**, pick the
+  row field(s), an optional column field and up to two values (Sum, Count or
+  Average). The table goes on a new sheet with grand totals. **Refresh**
+  rebuilds it to take in new rows and new categories.
 - Freeze panes (top row, first column, or at the selected cell)
 - Sum, average and count of the selection in the status bar
 - Undo and redo for everything
@@ -78,8 +82,14 @@ by the tests against LibreOffice.
 
 ## Known limits (My Excel)
 
+- Pivot tables are built from ordinary formulas (SUMIFS, COUNTIFS), not
+  Excel PivotTable objects. Their numbers update everywhere, including in
+  Excel and Google Sheets, but in real Excel they are a plain table: no field
+  list, and new categories appear only after Refresh in My Excel. The
+  definitions are kept in a hidden sheet so Refresh still works after you
+  reopen the file. Pivot tables made in real Excel open as plain values.
 - No charts, pictures, merged cells, conditional formatting, data validation,
-  comments, pivot tables, filters, or macros. Opening a file that has them
+  comments, filters, or macros. Opening a file that has them
   keeps the data and formulas but drops those parts when you save.
 - A few Excel functions are missing from the engine (for example the CUBE
   functions and some newer dynamic-array ones). A cell using one keeps the
@@ -109,6 +119,7 @@ Layout:
 - `src/excel/workbook.js` – cell data, formulas (HyperFormula), formatting, undo
 - `src/excel/grid.js` – the spreadsheet grid, drawn on a canvas
 - `src/excel/main.js` – ribbon, formula bar, sheet tabs, clipboard, find
+- `src/excel/pivot.js` – pivot tables
 - `build/installer.nsh` – adds the My Excel shortcut to the installer
 
 HyperFormula is used under its GPLv3 licence, which is fine for a program you

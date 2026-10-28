@@ -93,6 +93,8 @@ export class Workbook {
   }
 
   load(model) {
+    // Pivot table definitions, so they can be refreshed: see pivot.js.
+    this.pivots = (model.pivots || []).map((p) => ({ ...p }));
     this.hf.suspendEvaluation();
     for (const id of this.order) this.hf.removeSheet(id);
     this.meta.clear();
@@ -250,12 +252,13 @@ export class Workbook {
         cached: m.cached,
       });
     }
-    return { metas, order: [...this.order], activeId: this.activeId };
+    return { metas, order: [...this.order], activeId: this.activeId, pivots: this.pivots };
   }
 
   restore(snap) {
     for (const [id, m] of snap.metas) this.meta.set(id, { ...m });
     this.order = [...snap.order];
+    this.pivots = snap.pivots;
     this.activeId = snap.activeId;
   }
 
@@ -540,25 +543,29 @@ export class Workbook {
     });
   }
 
-  addSheet() {
-    let n = this.order.length + 1;
-    while (this.hf.doesSheetExist(`Sheet${n}`)) n++;
+  // Adds a sheet named Sheet2, Sheet3… (or PivotTable1… for another base name) and returns its id.
+  addSheet(base = 'Sheet') {
+    let n = base === 'Sheet' ? this.order.length + 1 : 1;
+    while (this.hf.doesSheetExist(`${base}${n}`)) n++;
+    let id;
     this.transact(() => {
-      let id;
       this.engine(() => {
-        id = this.hf.getSheetId(this.hf.addSheet(`Sheet${n}`));
+        id = this.hf.getSheetId(this.hf.addSheet(`${base}${n}`));
       });
       this.meta.set(id, newMeta());
       this.order = [...this.order, id];
       this.activeId = id;
     });
+    return id;
   }
 
   removeSheet(id) {
     if (this.order.length < 2) return;
     this.transact(() => {
       const index = this.order.indexOf(id);
+      const name = this.sheetName(id);
       this.engine(() => this.hf.removeSheet(id));
+      this.pivots = this.pivots.filter((p) => p.sheet !== name);
       this.order = this.order.filter((x) => x !== id);
       this.activeId = this.order[Math.max(0, index - 1)];
     });
@@ -573,7 +580,16 @@ export class Workbook {
     const existing = this.hf.getSheetId(name);
     if (existing !== undefined && existing !== id) return 'That name is already used by another sheet.';
     if (name === this.sheetName(id)) return null;
-    this.transact(() => this.engine(() => this.hf.renameSheet(id, name)));
+    const old = this.sheetName(id);
+    this.transact(() => {
+      this.engine(() => this.hf.renameSheet(id, name));
+      // Pivot tables refer to sheets by name.
+      this.pivots = this.pivots.map((p) => ({
+        ...p,
+        sheet: p.sheet === old ? name : p.sheet,
+        source: p.source.sheet === old ? { ...p.source, sheet: name } : p.source,
+      }));
+    });
     return null;
   }
 
@@ -633,7 +649,7 @@ export class Workbook {
       .listNamedExpressions()
       .filter((name) => name !== 'TRUE' && name !== 'FALSE')
       .map((name) => ({ name, ref: this.hf.getNamedExpressionFormula(name).replace(/^=/, '') }));
-    return { activeSheet: Math.max(0, this.order.indexOf(this.activeId)), names, sheets };
+    return { activeSheet: Math.max(0, this.order.indexOf(this.activeId)), names, sheets, pivots: this.pivots.map((p) => ({ ...p })) };
   }
 
   cellStyleForSave(id, r, c) {

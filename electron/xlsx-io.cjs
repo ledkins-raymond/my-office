@@ -16,7 +16,8 @@
 // "00123" from being read as a number). `value` is a formula's last result.
 //
 // Kept on open: values, formulas, number formats, fonts, fills, borders,
-// alignment, column widths, row heights, frozen panes, named ranges.
+// alignment, column widths, row heights, frozen panes, named ranges, and
+// My Excel's own pivot table definitions.
 // Dropped: charts, pictures, merged cells, conditional formatting, data
 // validation, comments, pivot tables and macros.
 const ExcelJS = require('exceljs');
@@ -50,8 +51,10 @@ async function readXlsx(buffer) {
   await wb.xlsx.load(buffer);
 
   const sheets = [];
+  const pivots = [];
   let activeSheet = 0;
   wb.eachSheet((ws) => {
+    if (ws.name === APP_DATA_SHEET) return readAppData(ws, pivots);
     if (ws.state === 'veryHidden') return;
     const view = ws.views?.[0] || {};
     if (view.tabSelected) activeSheet = sheets.length;
@@ -64,7 +67,32 @@ async function readXlsx(buffer) {
     // Print areas and other built-in names start with "_xlnm." and aren't for formulas.
     if (ranges?.length === 1 && !name.startsWith('_xlnm.')) names.push({ name, ref: ranges[0] });
   }
-  return { activeSheet, names, sheets };
+  return { activeSheet, names, sheets, pivots };
+}
+
+// My Excel keeps pivot table definitions (so they can be refreshed later) in a
+// sheet nobody sees. Other programs ignore it.
+const APP_DATA_SHEET = 'MyExcelData';
+
+function readAppData(ws, pivots) {
+  ws.eachRow((row) => {
+    if (row.getCell(1).value !== 'pivot') return;
+    try {
+      const def = JSON.parse(String(row.getCell(2).value));
+      if (def && def.sheet && def.source) pivots.push(def);
+    } catch {
+      // A damaged entry only loses Refresh for that pivot; its formulas still work.
+    }
+  });
+}
+
+function writeAppData(wb, model) {
+  if (!model.pivots?.length) return;
+  const ws = wb.addWorksheet(APP_DATA_SHEET, { state: 'veryHidden' });
+  model.pivots.forEach((def, i) => {
+    ws.getCell(i + 1, 1).value = 'pivot';
+    ws.getCell(i + 1, 2).value = JSON.stringify(def);
+  });
 }
 
 function readSheet(ws, view) {
@@ -238,6 +266,8 @@ async function writeXlsx(model) {
       if (cell.style) writeStyle(target, cell.style);
     }
   });
+
+  writeAppData(wb, model);
 
   const definedNames = [];
   for (const { name, ref } of model.names || []) definedNames.push({ name, ranges: [ref.replace(/^=/, '')] });
