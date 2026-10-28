@@ -1,0 +1,565 @@
+:root {
+  --accent: #217346;
+  --accent-soft: #d6eadf;
+  --chrome: #f3f3f3;
+  --border: #d1d1d1;
+  --text: #1f1f1f;
+  --muted: #605e5c;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 13px;
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+/* ---------- Ribbon ---------- */
+.ribbon,
+.find-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background: var(--chrome);
+  border-bottom: 1px solid var(--border);
+}
+
+.ribbon {
+  border-top: 3px solid var(--accent);
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 6px;
+  border-right: 1px solid var(--border);
+}
+
+.group:last-child {
+  border-right: 0;
+}
+
+button,
+select,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  min-height: 28px;
+  padding: 2px 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+button:hover {
+  background: #e1e1e1;
+}
+
+button:active,
+button.active {
+  background: var(--accent-soft);
+  border-color: #9fcbb2;
+}
+
+button.icon {
+  min-width: 30px;
+  padding: 2px 6px;
+  font-size: 14px;
+}
+
+select {
+  height: 28px;
+  padding: 0 4px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+#font {
+  width: 130px;
+}
+
+#size {
+  width: 54px;
+}
+
+#numfmt {
+  width: 110px;
+}
+
+#borders {
+  width: 96px;
+}
+
+.split {
+  display: inline-flex;
+  align-items: center;
+}
+
+.split button {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  min-width: 26px;
+}
+
+.swatch {
+  font-weight: 600;
+  line-height: 1;
+  border-bottom: 4px solid #c00000;
+  padding: 0 2px;
+}
+
+.swatch.fill {
+  border-bottom-color: #ffff00;
+}
+
+label.pick {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 3px;
+  font-size: 10px;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+}
+
+label.pick:hover {
+  background: #e1e1e1;
+}
+
+label.pick input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+label.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+}
+
+.align-icon {
+  display: inline-block;
+  width: 14px;
+  height: 12px;
+  background:
+    linear-gradient(currentColor, currentColor) 0 0 / 100% 2px no-repeat,
+    linear-gradient(currentColor, currentColor) var(--x2, 0) 5px / 65% 2px no-repeat,
+    linear-gradient(currentColor, currentColor) 0 10px / 100% 2px no-repeat;
+}
+
+.align-icon.center {
+  --x2: 50%;
+}
+
+.align-icon.right {
+  --x2: 100%;
+}
+
+.find-bar input:not([type='checkbox']) {
+  height: 28px;
+  width: 180px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+#find-status {
+  color: var(--muted);
+  min-width: 80px;
+}
+
+/* ---------- Formula bar ---------- */
+.formula-bar {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+}
+
+#name-box {
+  width: 100px;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.fx {
+  align-self: center;
+  font-style: italic;
+  font-family: Cambria, Georgia, serif;
+  color: var(--muted);
+  padding: 0 6px;
+  border-left: 1px solid var(--border);
+}
+
+#formula {
+  flex: 1;
+  min-height: 26px;
+  max-height: 120px;
+  padding: 3px 6px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  resize: none;
+  font-family: Calibri, Carlito, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 18px;
+  white-space: pre;
+  overflow: hidden;
+}
+
+#formula:focus,
+#name-box:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+/* ---------- Grid ---------- */
+.grid {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.grid-scroller {
+  position: absolute;
+  inset: 0;
+  overflow: scroll;
+}
+
+.grid-sizer {
+  width: 1px;
+  height: 1px;
+}
+
+.grid-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  cursor: cell;
+}
+
+.cell-editor {
+  position: absolute;
+  z-index: 2;
+  margin: 0;
+  padding: 1px 3px;
+  border: 0;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  line-height: 1.2;
+  color: transparent;
+  background: transparent;
+}
+
+.cell-editor.editing {
+  opacity: 1;
+  pointer-events: auto;
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------- Function autocomplete ---------- */
+.autocomplete,
+.context-menu {
+  position: fixed;
+  z-index: 10;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+.autocomplete {
+  max-height: 220px;
+  min-width: 180px;
+  overflow-y: auto;
+}
+
+.autocomplete li,
+.context-menu li {
+  padding: 4px 14px;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.autocomplete li.selected,
+.autocomplete li:hover,
+.context-menu li:not(.separator):hover {
+  background: var(--accent-soft);
+}
+
+.context-menu {
+  min-width: 200px;
+}
+
+.context-menu li.separator {
+  height: 1px;
+  margin: 4px 0;
+  padding: 0;
+  background: var(--border);
+}
+
+.context-menu li .key {
+  float: right;
+  margin-left: 24px;
+  color: var(--muted);
+}
+
+/* ---------- Sheet tabs ---------- */
+.sheet-bar {
+  display: flex;
+  align-items: stretch;
+  height: 30px;
+  background: var(--chrome);
+  border-top: 1px solid var(--border);
+}
+
+.sheet-bar > button {
+  border-radius: 0;
+  border-right: 1px solid var(--border);
+}
+
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.tab:hover {
+  background: #e6e6e6;
+}
+
+.tab.active {
+  background: #fff;
+  color: var(--accent);
+  font-weight: 600;
+  box-shadow: inset 0 -3px 0 var(--accent);
+}
+
+.tab.drag-over {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.tab input {
+  width: 110px;
+  height: 22px;
+  padding: 0 4px;
+  border: 1px solid var(--accent);
+}
+
+/* ---------- Status bar ---------- */
+.status {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 3px 12px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+}
+
+#selection-stats {
+  display: flex;
+  gap: 18px;
+}
+
+/* ---------- Dialog ---------- */
+dialog {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  min-width: 320px;
+}
+
+dialog h2 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+dialog label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+  color: var(--muted);
+}
+
+dialog input {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+}
+
+#pivot-dialog {
+  width: 480px;
+}
+
+#pivot-range {
+  width: 100%;
+}
+
+.pivot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 12px;
+}
+
+.pivot-grid select {
+  width: 100%;
+  color: var(--text);
+}
+
+dialog .note {
+  margin: 4px 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+dialog .error:empty {
+  display: none;
+}
+
+dialog .error {
+  color: #a4262c;
+  margin: 0 0 8px;
+}
+
+dialog menu {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+dialog menu button {
+  border: 1px solid var(--border);
+  padding: 4px 16px;
+}
+
+dialog menu button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ---------- Print and PDF ---------- */
+#print-area {
+  display: none;
+}
+
+@page {
+  size: letter landscape;
+  margin: 0.5in;
+}
+
+@media print {
+  html,
+  body {
+    display: block;
+    height: auto;
+    overflow: visible;
+  }
+
+  body > *:not(#print-area) {
+    display: none !important;
+  }
+
+  #print-area {
+    display: block;
+  }
+
+  #print-area h1 {
+    font: 600 12pt 'Segoe UI', sans-serif;
+    margin: 0 0 6pt;
+  }
+
+  #print-area section + section {
+    break-before: page;
+  }
+
+  #print-area table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-family: Calibri, Carlito, sans-serif;
+    font-size: 11pt;
+  }
+
+  #print-area td {
+    padding: 1px 3px;
+    border: 0.5pt solid #d0d0d0;
+    overflow: hidden;
+    white-space: nowrap;
+    vertical-align: bottom;
+  }
+
+  #print-area td.wrap {
+    white-space: pre-wrap;
+  }
+
+  #print-area tr {
+    break-inside: avoid;
+  }
+}
